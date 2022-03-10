@@ -2,3 +2,4 @@
 a.java
 .vscode/settings.json
 multimedia/*
+*.class

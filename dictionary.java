@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 import javax.json.Json;
@@ -43,7 +44,7 @@ public class dictionary {
         }
     };
     
-    private void url_handler(File dic, String url){
+    private void url_handler(File dic, String url) throws UndersizeException, UnbalncedException{
         try {
             InputStream is = new URL(url).openStream();
             JsonReader rdr = Json.createReader(is);
@@ -51,6 +52,7 @@ public class dictionary {
             JsonString jtext = get_desc_value(obj);
             String text = jtext.getString();
             write_dic(dic, text);
+            System.out.println("dictionary initialized from web");
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -69,7 +71,7 @@ public class dictionary {
         return result;
     };
 
-    private  void write_dic(File dic, String data) throws IOException{
+    private  void write_dic(File dic, String data) throws IOException, UndersizeException, UnbalncedException{
         words = tokenize(data);
         dic.getParentFile().mkdirs();
         dic.createNewFile();
@@ -80,26 +82,34 @@ public class dictionary {
         wr.close();
     }
 
-	private  Set<String> tokenize(String data){
+	private  Set<String> tokenize(String data) throws UndersizeException, UnbalncedException{
         String[] words_arr = data.split("[^a-zA-Z]+",0);
 		Set<String> result = new HashSet<String>();
+        int over_9 = 0;
         for (int i = 0; i < words_arr.length; i++) {
             if (words_arr[i].length() >= 6){
+                if (words_arr[i].length() >= 9){
+                    over_9++;
+                }
                 String to_add = words_arr[i].toUpperCase();
 				result.add(to_add);
 			}
         }
-		if (result.size() >= 20){
-	        return result;
-		}
-		return null;
+        if (over_9 < (int) (words.size() * 0.2)) {
+            throw new UnbalncedException("minimum number of words with length greater than 9: "
+                    + (int) (words.size() * 0.2) + "\n number of words with length greater than 9: " + over_9);
+        }
+		if (result.size() < 20){
+            throw new UndersizeException();
+        }
+        return result;
     };
 
     private void file_handler(File dic) throws InvalidCountException, UndersizeException, UnbalncedException, InvalidRangeException {
         try {
             BufferedReader rd = new BufferedReader(new FileReader(dic));
             String line = rd.readLine();
-            int line_num = 0, over_9 = 0;
+            int  over_9 = 0;
             while (line != null) {
                 if (words.contains(line)) {
                     rd.close();
@@ -113,19 +123,19 @@ public class dictionary {
                 if (line.length() >= 9) {
                     over_9++;
                 }
-                line_num++;
                 line = rd.readLine();
             }
-            if (over_9 < (int) (line_num * 0.2)) {
+            if (over_9 < (int) (words.size() * 0.2)) {
                 rd.close();
                 throw new UnbalncedException("minimum number of words with length greater than 9: "
-                        + (int) (line_num * 0.2) + "\n number of words with length greater than 9: " + over_9);
+                        + (int) (words.size() * 0.2) + "\n number of words with length greater than 9: " + over_9);
             }
-            if (line_num < 20) {
+            if (words.size() < 20) {
                 rd.close();
                 throw new UndersizeException();
             }
             rd.close();
+            System.out.println("dictionary initialized from file");
         } catch (IOException e) {
             e.printStackTrace();
         }

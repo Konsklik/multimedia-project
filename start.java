@@ -1,27 +1,38 @@
+import java.io.IOException;
 import java.util.Scanner;
 
 public class start{
-    public static String get_dict(){
-        Scanner scanner = new Scanner(System.in);
-        String result = scanner.nextLine();
-        scanner.close();
-        return result;
-    }
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException{
         //start up window
         //loop? class? function w/ return dict?
-
+        
         //game setup
-        String dict_name = get_dict();
+        Scanner scanner = new Scanner(System.in);
+        String dict_name = scanner.nextLine();
         try {
             dictionary dic = new dictionary(dict_name);
+            game play = new game(dic);
+            while (!play.victory() && play.life > 0){
+                char letter = scanner.next().charAt(0);
+                int pos = scanner.nextInt();
+                if(play.make_move(letter, pos)){
+                    System.out.println("hit");
+                }
+                else{
+                    System.out.println("miss");
+                }
+            }
+            scanner.close();
+            if (play.victory()){
+                System.out.println("success");
+            }
+            else{
+                System.out.println("defeat");
+            }
         } catch (InvalidCountException | UndersizeException | UnbalncedException | InvalidRangeException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        //choose_random(dict_list);
-        //int letter = calc_propabilities();
-
         //game window
         //class
     }
