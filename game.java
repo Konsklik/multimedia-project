@@ -33,6 +33,22 @@ public class game {
         }
     }
 
+    public String print_found(){
+        String result = "";
+        for (int i = 0; i < hit.length; i++) {
+            if (hit[i]){
+                System.out.print(word.charAt(i));
+                result += word.charAt(i);
+            }
+            else{
+                System.out.print('_');
+                result += '_';
+            }
+        }
+        System.out.println("");
+        return result;
+    }
+
     public boolean make_move(char guess_char, int guess_spot){
         recalculate_probabilities(guess_char, guess_spot);
         boolean result = (guess_char == word.charAt(guess_spot));

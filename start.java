@@ -12,7 +12,11 @@ public class start{
         try {
             dictionary dic = new dictionary(dict_name);
             game play = new game(dic);
-            while (!play.victory() && play.life > 0){
+            //game window
+            //class
+            window.go(play);
+            /*while (!play.victory() && play.life > 0){
+                play.print_found();
                 char letter = scanner.next().charAt(0);
                 int pos = scanner.nextInt();
                 if(play.make_move(letter, pos)){
@@ -28,12 +32,10 @@ public class start{
             }
             else{
                 System.out.println("defeat");
-            }
+            }*/
         } catch (InvalidCountException | UndersizeException | UnbalncedException | InvalidRangeException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        //game window
-        //class
     }
 }
