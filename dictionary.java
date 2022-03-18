@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -32,7 +33,7 @@ class UnbalncedException extends Exception{
 
 public class dictionary {
     Set<String>  words = new HashSet<String>();
-    public dictionary(String dic_ID) throws InvalidCountException, UndersizeException, UnbalncedException, InvalidRangeException{
+    public dictionary(String dic_ID) throws InvalidCountException, UndersizeException, UnbalncedException, InvalidRangeException, FileNotFoundException{
         String directory = new File("").getAbsolutePath();
         File dic = new File(directory + "\\multimedia\\hangman_" + dic_ID + ".txt");
         if(!dic.isFile()){
@@ -43,7 +44,7 @@ public class dictionary {
         }
     };
     
-    private void url_handler(File dic, String url) throws UndersizeException, UnbalncedException{
+    private void url_handler(File dic, String url) throws UndersizeException, UnbalncedException, FileNotFoundException{
         try {
             InputStream is = new URL(url).openStream();
             JsonReader rdr = Json.createReader(is);

@@ -1,9 +1,10 @@
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -12,6 +13,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
@@ -22,76 +24,107 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.VLineTo;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 public class window extends Application {
-    int score = 0;
-    double ratio = 0.0;
     static game play;
-    public static void go(game p) {
-        play = p;
+    int correct = 0;
+    int turn = 0;
+    dictionary dic;
+    Integer p;
+
+    public static void go() throws FileNotFoundException {
         launch("");
     }
+
     public static void main(String[] args) {
-        
+
     }
+
     @Override
     public void start(Stage primaryStage) throws FileNotFoundException {
-        Background blanchedalmont = new Background(new BackgroundFill(Color.BLANCHEDALMOND, CornerRadii.EMPTY, Insets.EMPTY));
+        Background background = new Background(new BackgroundFill(Color.BURLYWOOD, CornerRadii.EMPTY, Insets.EMPTY));
+        primaryStage.setTitle("dictionary picker");
+        Label prompt = new Label("enter dictionary ID");
+        Label error = new Label();
+        TextField input = new TextField("OL15626917W");
+        Button button = new Button("search");
+        button.setOnAction((e) -> {
+            String dic_name = input.getText();
+            try {
+                dic = new dictionary(dic_name);
+                Stage s = (Stage) primaryStage.getScene().getWindow();
+                s.close();
+                sec();
+            } catch (Exception err) {
+                error.setText("an error happened\n please try again");
+                err.printStackTrace();
+            }
+        });
+        VBox box = new VBox(prompt, input, error, button);
+        box.setBackground(background);
+        box.setAlignment(Pos.CENTER);
+        StackPane roota = new StackPane();
+        roota.getChildren().add(box);
+        primaryStage.setScene(new Scene(roota, 700, 300));
+        primaryStage.show();
+    }
+
+    public void sec() {
+        play = new game(dic, p);
+        Stage primaryStage = new Stage();
+
+        Background blanchedalmont = new Background(
+                new BackgroundFill(Color.BLANCHEDALMOND, CornerRadii.EMPTY, Insets.EMPTY));
         Background burlywood = new Background(new BackgroundFill(Color.BURLYWOOD, CornerRadii.EMPTY, Insets.EMPTY));
         Background chocolate = new Background(new BackgroundFill(Color.CHOCOLATE, CornerRadii.EMPTY, Insets.EMPTY));
         Background brown = new Background(new BackgroundFill(Color.BROWN, CornerRadii.EMPTY, Insets.EMPTY));
-        
+
         primaryStage.setTitle("MediaLab Hangman");
 
-
-        Label words_in_dictionairy = new Label("word count: " + play.words.size());
+        Label words_in_dictionairy = new Label("word count: " + dic.words.size());
         Pane wd_pane = new Pane();
         wd_pane.setBackground(burlywood);
         wd_pane.getChildren().add(words_in_dictionairy);
-        Label points = new Label("score: " + score);
+        Label points = new Label("score: " + play.points);
         Pane p_pane = new Pane();
         p_pane.setBackground(blanchedalmont);
         p_pane.getChildren().add(points);
-        Label correct_ratio = new Label("correct ratio: " + ratio + "%");
+        Label correct_ratio = new Label("correct ratio: " + 0.0 + "%");
         Pane cr_pane = new Pane();
         cr_pane.setBackground(burlywood);
         cr_pane.getChildren().add(correct_ratio);
         VBox top = new VBox(wd_pane, p_pane, cr_pane);
         top.setBackground(chocolate);
 
-
-        Image ina = new Image("images/health-6.png");
-        ImageView a0 = new ImageView(ina);
-        Label a1 = new Label(play.print_found());
-        a1.setFont(new Font("Arial", 30));
-        VBox left_pane = new VBox(a0,a1);
+        ImageView hang_image = new ImageView(new Image("images/health-" + play.life + ".png"));
+        Label found_word = new Label(play.print_found());
+        found_word.setFont(new Font("Arial", 30));
+        VBox left_pane = new VBox(hang_image, found_word);
         left_pane.setAlignment(Pos.CENTER);
-        
+
         Label[][] propabilities = new Label[26][play.word.length()];
-        HBox[] prob_Box = new HBox[26];
-        VBox right_pane = new VBox(new Separator(Orientation.HORIZONTAL));
+        VBox[] prob_Box = new VBox[26];
+        HBox right_pane = new HBox(10, new Separator(Orientation.VERTICAL));
         right_pane.setBackground(blanchedalmont);
-        for (int i = 0; i < 26; i++) {
-            prob_Box[i] = new HBox(10, new Separator(Orientation.VERTICAL));
-            for (int j = 0; j < play.word.length(); j++) {
+        for (int j = 0; j < play.word.length(); j++) {
+            prob_Box[j] = new VBox(new Separator(Orientation.HORIZONTAL));
+            for (int i = 0; i < 26; i++) {
                 propabilities[i][j] = new Label();
-                propabilities[i][j].setText((char)(i + 65) + ": " + play.propabilities[i][j]);
+                propabilities[i][j]
+                        .setText((char) (i + 65) + ": " + play.propabilities[i][j] * 100 / play.words.size() + "%");
                 propabilities[i][j].setFont(new Font("Courier New", 20));
-                prob_Box[i].getChildren().add(propabilities[i][j]);
-                prob_Box[i].getChildren().add(new Separator(Orientation.VERTICAL));
+                prob_Box[j].getChildren().add(propabilities[i][j]);
+                prob_Box[j].getChildren().add(new Separator(Orientation.HORIZONTAL));
             }
-            right_pane.getChildren().add(prob_Box[i]);
-            right_pane.getChildren().add(new Separator(Orientation.HORIZONTAL));
+            right_pane.getChildren().add(prob_Box[j]);
+            right_pane.getChildren().add(new Separator(Orientation.VERTICAL));
         }
 
-        HBox mid = new HBox (10, left_pane, new Separator(Orientation.VERTICAL), right_pane);
+        HBox mid = new HBox(10, left_pane, new Separator(Orientation.VERTICAL), right_pane);
         mid.setAlignment(Pos.CENTER);
         mid.setBackground(chocolate);
-        
 
         ComboBox<Integer> pos_choice = new ComboBox<>();
         for (int i = 0; i < play.word.length(); i++) {
@@ -100,26 +133,136 @@ public class window extends Application {
         Label pos_label = new Label("choose position:");
         ComboBox<Character> char_choice = new ComboBox<>();
         Label char_label = new Label("choose character:");
-        HBox bot = new HBox(5, pos_label, pos_choice, new Separator(Orientation.VERTICAL), char_label, char_choice);
+        Button guess = new Button("guess");
+        HBox bot = new HBox(5, pos_label, pos_choice, new Separator(Orientation.VERTICAL), char_label, char_choice,
+                new Separator(Orientation.VERTICAL), guess);
+        bot.setBackground(blanchedalmont);
 
-        pos_choice.setOnAction((e)->{
-            int selected = pos_choice.getValue();
-            char_choice.getItems().clear();
-            for (int i = 0; i < 26; i++) {
-                if (play.propabilities[i][selected] != 0){
-                    char_choice.getItems().add((char)(i + 65));
-                }                
+        guess.setOnAction((e) -> {
+            Character guess_char = char_choice.getValue();
+            Integer guess_spot = pos_choice.getValue();
+            if (play.defeat() || play.victory()) {
+                return;
+            }
+            if (guess_char != null && guess_spot != null) {
+                if (play.make_move((char) guess_char, (int) guess_spot)) {
+                    correct++;
+                }
+                found_word.setText(play.print_found());
+                hang_image.setImage(new Image("images/health-" + play.life + ".png"));
+                if (play.victory()) {
+                    pop_up(primaryStage, true);
+                }
+                if (play.defeat()) {
+                    pop_up(primaryStage, false);
+                    found_word.setText(play.word);
+                    found_word.setTextFill(Color.RED);
+                }
+                char_choice.getItems().clear();
+                List<List<Integer>> temp = new ArrayList<>();
+                for (int i = 0; i < 26; i++) {
+                    temp.add(new ArrayList<>());
+                    temp.get(i).add(play.propabilities[i][guess_spot]);
+                    temp.get(i).add(i);
+                }
+                Collections.sort(temp, new Comparator<List<Integer>>() {
+                    @Override
+                    public int compare(List<Integer> o1, List<Integer> o2) {
+                        return o1.get(0).compareTo(o2.get(0));
+                    }
+                });
+                for (List<Integer> tup : temp) {
+                    if (tup.get(0) != 0) {
+                        char_choice.getItems().add((char) (tup.get(1) + 65));
+                    }
+                }
+
+                for (int i = 0; i < 26; i++) {
+                    for (int j = 0; j < play.word.length(); j++) {
+                        propabilities[i][j].setText(
+                                (char) (i + 65) + ": " + play.propabilities[i][j] * 100 / play.words.size() + "%");
+                    }
+                }
+                turn++;
+                points.setText("score: " + play.points);
+                correct_ratio.setText("correct ratio: " + correct * 100 / (double) turn + "%");
             }
         });
 
+        pos_choice.setOnAction((e) -> {
+            int selected = pos_choice.getValue();
+            char_choice.getItems().clear();
+            List<List<Integer>> temp = new ArrayList<>();
+            for (int i = 0; i < 26; i++) {
+                temp.add(new ArrayList<>());
+                temp.get(i).add(play.propabilities[i][selected]);
+                temp.get(i).add(i);
+            }
+            Collections.sort(temp, new Comparator<List<Integer>>() {
+                @Override
+                public int compare(List<Integer> o1, List<Integer> o2) {
+                    return o1.get(0).compareTo(o2.get(0));
+                }
+            });
+            for (List<Integer> tup : temp) {
+                if (tup.get(0) != 0) {
+                    char_choice.getItems().add((char) (tup.get(1) + 65));
+                }
+            }
+        });
+        System.out.println(play.word);
 
-        VBox vbox = new VBox(5, top, new Separator(Orientation.HORIZONTAL), mid, new Separator(Orientation.HORIZONTAL), bot);
+        VBox vbox = new VBox(5, top, new Separator(Orientation.HORIZONTAL), mid, new Separator(Orientation.HORIZONTAL),
+                bot);
         vbox.setBackground(brown);
 
-        
         StackPane root = new StackPane();
         root.getChildren().add(vbox);
         primaryStage.setScene(new Scene(root, 1600, 900));
+        primaryStage.show();
+    }
+
+    public void pop_up(Stage gameStage, boolean victory) {
+        p = play.points;
+        Background background = new Background(new BackgroundFill(Color.BURLYWOOD, CornerRadii.EMPTY, Insets.EMPTY));
+        Stage primaryStage = new Stage();
+        primaryStage.setTitle("you win");
+        Button new_dic = new Button("new dictionary");
+        new_dic.setOnAction((e) -> {
+            Stage s = (Stage) primaryStage.getScene().getWindow();
+            s.close();
+            s = (Stage) gameStage.getScene().getWindow();
+            s.close();
+            try {
+                start(gameStage);
+            } catch (FileNotFoundException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        });
+        Button same_dic = new Button("same dictionairy");
+        same_dic.setOnAction((e) -> {
+            Stage s = (Stage) primaryStage.getScene().getWindow();
+            s.close();
+            s = (Stage) gameStage.getScene().getWindow();
+            s.close();
+            sec();
+        });
+        StackPane root = new StackPane();
+        HBox h = new HBox(same_dic, new_dic);
+        Label text;
+        if (victory) {
+            text = new Label("you win");
+        } else {
+            turn = 0;
+            correct = 0;
+            text = new Label("you lose");
+        }
+        VBox v = new VBox(text, h);
+        v.setAlignment(Pos.CENTER);
+        v.setBackground(background);
+        root.getChildren().add(v);
+        primaryStage.setScene(new Scene(root, 200, 100));
         primaryStage.show();
     }
 }
