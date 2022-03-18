@@ -17,22 +17,51 @@ import javax.json.JsonString;
 
 
 
+/**
+ * Exception thrown when dictionary being constructed contains duplicate words
+ * Will only be thrown when construsting from file. If constructing from web duplicates will be ignored
+ */
 class InvalidCountException extends Exception{}
+/**
+ * Exception thrown when dictionairy being constructed has less than 20 words
+ */
 class UndersizeException extends Exception{}
+/**
+ * Exception thrown when dictionairy being constructed contains words with length less than 6
+ * Will only be thrown when construsting from file. If constructing from web short words will be ignored
+ */
 class InvalidRangeException extends Exception{
 	public InvalidRangeException(){
-		super("word under 6 letters");
+		super("word under 6 letters found");
 	}
 }
+/**
+ * Exception thrown when dictionairy being constructed has less 20% of it's words be of length 9 or greater
+ */
 class UnbalncedException extends Exception{
 	public UnbalncedException(String errorMessage){
 		super(errorMessage);
 	}
 }
 
-
+/**
+ * class to create a dictionairy can be used to initiate a game class
+ */
 public class dictionary {
+    /**
+     * set of all words in the dictionairy
+     */
     Set<String>  words = new HashSet<String>();
+    /**
+     * creates new dictionary initialized from the file .\multimedia\hangman_'dic_ID'.txt if it exists, 
+     * if it does not the file is created from data collected at https://openlibrary.org/works/'dic_ID'.json
+     * @param dic_ID an ID for the dictionairy
+     * @throws InvalidCountException
+     * @throws UndersizeException
+     * @throws UnbalncedException
+     * @throws InvalidRangeException
+     * @throws FileNotFoundException
+     */
     public dictionary(String dic_ID) throws InvalidCountException, UndersizeException, UnbalncedException, InvalidRangeException, FileNotFoundException{
         String directory = new File("").getAbsolutePath();
         File dic = new File(directory + "\\multimedia\\hangman_" + dic_ID + ".txt");
@@ -43,7 +72,16 @@ public class dictionary {
             file_handler(dic);
         }
     };
-    
+
+    /**
+     * private function that handles dictionairy constraction from a json file pointed at by the url variable
+     * it expects the json to contain a field with the name "description" that is either a string or it contains a fied called "value" that is a string
+     * @param dic file that the dictionairy will be stored at
+     * @param url url to look up, must be to a json file
+     * @throws UndersizeException
+     * @throws UnbalncedException
+     * @throws FileNotFoundException
+     */
     private void url_handler(File dic, String url) throws UndersizeException, UnbalncedException, FileNotFoundException{
         try {
             InputStream is = new URL(url).openStream();
@@ -60,6 +98,11 @@ public class dictionary {
         }
     };
     
+    /**
+     * fuction that returns the string of field "value" in the field "description" of obj or if that doesn't exist returns the string of field "description"
+     * @param obj json object from which to extract the information
+     * @return  string from "description":"value" or "description"
+     */
     private  JsonString get_desc_value(JsonObject obj){
         JsonString result;
         try{
@@ -71,6 +114,14 @@ public class dictionary {
         return result;
     };
 
+    /**
+     * writes dictionairy to file and save all valid words in words variable. Will automatically the proper folders for the dictionary to be put in
+     * @param dic file to write in
+     * @param data  text to be proccessed
+     * @throws IOException
+     * @throws UndersizeException
+     * @throws UnbalncedException
+     */
     private  void write_dic(File dic, String data) throws IOException, UndersizeException, UnbalncedException{
         words = tokenize(data);
         dic.getParentFile().mkdirs();
@@ -82,6 +133,13 @@ public class dictionary {
         wr.close();
     }
 
+    /**
+     * breaks data to individual words and returns them in a set. Words of length under 6 get thrown out
+     * @param data string to be broken down
+     * @return  set of valid words
+     * @throws UndersizeException
+     * @throws UnbalncedException
+     */
 	private  Set<String> tokenize(String data) throws UndersizeException, UnbalncedException{
         String[] words_arr = data.split("[^a-zA-Z]+",0);
 		Set<String> result = new HashSet<String>();
@@ -105,6 +163,14 @@ public class dictionary {
         return result;
     };
 
+    /**
+     * function that handles construction from file
+     * @param dic file to be read
+     * @throws InvalidCountException
+     * @throws UndersizeException
+     * @throws UnbalncedException
+     * @throws InvalidRangeException
+     */
     private void file_handler(File dic) throws InvalidCountException, UndersizeException, UnbalncedException, InvalidRangeException {
         try {
             BufferedReader rd = new BufferedReader(new FileReader(dic));

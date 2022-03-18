@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes","u":"allclasses-index.html"},{"p":"<Unnamed>","l":"dictionary"},{"p":"<Unnamed>","l":"game"},{"p":"<Unnamed>","l":"InvalidCountException"},{"p":"<Unnamed>","l":"InvalidRangeException"},{"p":"<Unnamed>","l":"UnbalncedException"},{"p":"<Unnamed>","l":"UndersizeException"}];updateSearchResults();
